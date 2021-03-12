@@ -5,11 +5,19 @@ require 'singleton'
 class ColorStateProjection
   include Singleton
 
-  ColorState = Struct.new(:color, :sum_of_all_changes, :sequence_number, keyword_init: true)
+  class ColorState
+    attr_reader :color, :sum_of_all_changes, :sequence_number
+
+    def initialize(color, sum_of_all_changes, sequence_number)
+      @color = color
+      @sum_of_all_changes = sum_of_all_changes
+      @sequence_number = sequence_number
+    end
+  end
 
   def initialize
     @lock = Mutex.new
-    @value = ColorState.new(color: 0, sum_of_all_changes: 0)
+    @value = ColorState.new(0, 0, nil)
   end
 
   def color_state
@@ -23,9 +31,9 @@ class ColorStateProjection
     color_change = color_change_event.color_change
 
     @lock.synchronize {
-      @value = ColorState.new(color:              @value.color ^ color_change,
-                              sum_of_all_changes: @value.sum_of_all_changes + color_change,
-                              sequence_number:    sequence_number)
+      @value = ColorState.new(@value.color ^ color_change,
+                              @value.sum_of_all_changes + color_change,
+                              sequence_number)
     }
   end
 end
