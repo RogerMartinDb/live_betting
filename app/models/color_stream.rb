@@ -33,12 +33,9 @@ class ColorStream
     end
   end
 
-  MAX_RGB = 256 ** 3 - 1
-
   def next_event
-    sleep 0.1
+    sleep 0.5
     @sequence += 1
-    #color_change = Random.new.rand(1..MAX_RGB)
     color_change = 2 ** Random.new.rand(0..23)
     ColorChangeEvent.new(@sequence, color_change)
   end

@@ -1,17 +1,115 @@
+<style>
+.polling {
+  color: orange;
+}
+.streaming {
+  color: green;
+}
+.connected {
+  color: green;
+}
+.disconnected {
+  color: red;
+}
+</style>
+
 <h1>Live Betting Overview</h1>
 
 <h2>Current State</h2>
 <div id="current_color_indicator" style="height: 50px; width: 200px;"></div>
 Current Color <div id="current_color"></div>
-Current Total <div id="current_total">2162748080</div>
+Current Total <div id="current_total"></div>
+SequenceNumber <div id="sequence_number"></div>
 
 <h2>Processing Status</h2>
-Stream is <div id="stream_connection_state"></div>
+<div id="stream_connection_state"></div><br/>
+<div id="processing_mode"></div>
 
 <h2>Manage Stream</h2>
-<a href="/manage_stream/start" target="_blank">Start</a><br/>
-<a href="/manage_stream/stop" target="_blank">Stop</a><br/>
+<p>
+  <input id="start_stream" type="button" value="Start" />
+  <input id="stop_stream" type="button" value="Pause" />
+</p>
+
+<p>
+  <input id="fake_stream_disconnect" type="button" value="Fake Disconnect" />
+  <input id="end_fake_stream_disconnect" type="button" value="Stop Fake Disconnect" />
+</p>
 
 <h2>View Cached Current State from Server</h2>
 <a href="/color_changer/current_state" target="_blank">Cached Current State</a><br/>
+
+<script>
+
+  document.getElementById("start_stream").onclick = function(){fetch("/manage_stream/start")};
+  document.getElementById("stop_stream").onclick = function(){fetch("/manage_stream/stop")};
+
+  document.getElementById("fake_stream_disconnect").onclick = function(){streamCoordinator.startFakeDisconnect()};
+  document.getElementById("end_fake_stream_disconnect").onclick = function(){streamCoordinator.endFakeDisconnect()};
+
+  function setColorState(projection){
+    console.debug(projection)
+    document.getElementById("current_color_indicator").style.backgroundColor = toColorString(projection.color)
+    document.getElementById("current_color").innerText = projection.color
+    document.getElementById("current_total").innerText = projection.sum_of_all_changes
+    document.getElementById("sequence_number").innerText = projection.sequence_number
+  }
+
+  function updateColorState(change){
+    console.debug(change)
+
+    let old_color = parseInt(document.getElementById("current_color").innerText) || 0
+    let new_color = old_color ^ change.color_change
+
+    let old_total = parseInt(document.getElementById("current_total").innerText) || 0
+    let new_total = old_total + new_color
+
+    let projection =  { color: new_color,
+                        sum_of_all_changes: new_total,
+                        sequence_number: change.sequence_number
+                      }
+
+    setColorState(projection)
+  }
+
+  function toColorString(color) {
+    let b = lastByteAsHex(color)
+    color >>= 8
+    let g = lastByteAsHex(color)
+    color >>= 8
+    let r = lastByteAsHex(color)
+
+    return `#${r}${g}${b}`
+  }
+
+  function lastByteAsHex(n) {
+    n &= 255
+    if (n < 16)
+      return '0' + n.toString(16);
+
+    return n.toString(16);
+  }
+
+  function onConnectedChange(connection_state) {
+    element = document.getElementById("stream_connection_state")
+    element.innerText = `Stream is ${connection_state}`;
+    element.className = connection_state;
+  }
+
+  function onProcessingModeChange(processing_mode) {
+    element = document.getElementById("processing_mode")
+    element.innerText = `Processing mode is ${processing_mode}`;
+    element.className = processing_mode;
+  }
+
+  streamCoordinator.projectionLocation = '/color_changer/current_state';
+  streamCoordinator.projectionHandler = setColorState;
+  streamCoordinator.eventHandler = updateColorState;
+  streamCoordinator.onConnectedChange = onConnectedChange;
+  streamCoordinator.onProcessingModeChange = onProcessingModeChange;
+
+  window.onload = streamCoordinator.start();
+
+</script>
+
 
