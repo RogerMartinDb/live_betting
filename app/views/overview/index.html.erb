@@ -44,8 +44,8 @@ SequenceNumber <div id="sequence_number"></div>
   document.getElementById("start_stream").onclick = function(){fetch("/manage_stream/start")};
   document.getElementById("stop_stream").onclick = function(){fetch("/manage_stream/stop")};
 
-  document.getElementById("fake_stream_disconnect").onclick = function(){streamCoordinator.startFakeDisconnect()};
-  document.getElementById("end_fake_stream_disconnect").onclick = function(){streamCoordinator.endFakeDisconnect()};
+  document.getElementById("fake_stream_disconnect").onclick = function(){streamCoordinator.startDebugFakeDisconnect()};
+  document.getElementById("end_fake_stream_disconnect").onclick = function(){streamCoordinator.endDebugFakeDisconnect()};
 
   function setColorState(projection){
     console.debug(projection)
