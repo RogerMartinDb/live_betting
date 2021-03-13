@@ -22,7 +22,7 @@ class ColorStream
   private
 
   def do_work
-    current_projecton = ColorStateProjection.instance
+    current_projecton = ColorStateProjector.instance
 
     @worker = Thread.new do
       while @go do
@@ -33,10 +33,13 @@ class ColorStream
     end
   end
 
+  MAX_RGB = 256 ** 3 - 1
+
   def next_event
-    sleep 2
+    sleep 0.1
     @sequence += 1
-    color_change = Random.new.rand(1..10)
+    #color_change = Random.new.rand(1..MAX_RGB)
+    color_change = 2 ** Random.new.rand(0..23)
     ColorChangeEvent.new(@sequence, color_change)
   end
 end

@@ -2,7 +2,7 @@ require 'singleton'
 
 # represents the current state of color after all changes have been applied
 # analogous to full current live bets overview JSON
-class ColorStateProjection
+class ColorStateProjector
   include Singleton
 
   class ColorState
