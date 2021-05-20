@@ -26,7 +26,19 @@ class ColorStateProjector
     }
   end
 
-  def apply_change(color_change_event)
+  def add_change(color_change_event)
+    @change_buffer ||= []
+    @change_buffer << color_change_event
+
+    if(@change_buffer.length > 10)
+      @change_buffer.each { |change| apply(change)}
+      @change_buffer = []
+    end
+  end
+
+  private
+
+  def apply(color_change_event)
     sequence_number = color_change_event.sequence_number
     color_change = color_change_event.color_change
 

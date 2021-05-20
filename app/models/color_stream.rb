@@ -28,7 +28,7 @@ class ColorStream
       while @go do
         event = next_event
         ActionCable.server.broadcast('color_stream', event)
-        current_projecton.apply_change(event)
+        current_projecton.add_change(event)
       end
     end
   end
